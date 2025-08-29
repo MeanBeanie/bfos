@@ -1,0 +1,3 @@
+https://github.com/lukearend/x86-bootloader
+github.com/jessewashburn/nasm-bootloader
+https://wiki.osdev.org/Setting_Up_Long_Mode#Entering_Long_Mode
