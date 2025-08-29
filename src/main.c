@@ -1,4 +1,5 @@
 #include "limine.h"
+#include "kernel_debug.h"
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
@@ -20,7 +21,7 @@ static volatile LIMINE_REQUESTS_END_MARKER;
 
 // GCC and CLang both expect these functions to be decalred
 // they are implemented as the C standard mandates
-// taken from https://wiki.osdev.org/Limine_Bare_Bones
+// implementations taken from https://wiki.osdev.org/Limine_Bare_Bones
 
 void *memcpy(void *restrict dest, const void *restrict src, size_t n) {
 	uint8_t *restrict pdest = (uint8_t *restrict)dest;
@@ -93,10 +94,7 @@ void kmain(void){
 
 	struct limine_framebuffer* framebuffer = framebuffer_request.response->framebuffers[0];
 
-	for(size_t i = 0; i < 100; i++){
-		volatile uint32_t* fb_ptr = framebuffer->address;
-		fb_ptr[i * (framebuffer->pitch / 4) + i] = 0xffffff;
-	}
+	kdbg_printf(framebuffer, 10, 10, "Hello, World!");
 
 	hcf();
 }

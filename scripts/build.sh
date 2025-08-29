@@ -1,5 +1,9 @@
 #!/bin/bash
 
+rm bfOS.iso
+rm iso_root/boot/bfOS
+
+cp bin/bfOS iso_root/boot/
 cp ./limine.conf iso_root/boot/limine
 
 make
