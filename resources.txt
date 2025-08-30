@@ -2,3 +2,7 @@ https://github.com/lukearend/x86-bootloader
 github.com/jessewashburn/nasm-bootloader
 https://wiki.osdev.org/Setting_Up_Long_Mode#Entering_Long_Mode
 https://wiki.osdev.org/Limine_Bare_Bones
+https://wiki.osdev.org/Creating_an_Operating_System
+https://operating-system-in-1000-lines.vercel.app/en/
+https://wiki.osdev.org/8259_PIC
+http://brokenthorn.com/Resources/OSDevPic.html

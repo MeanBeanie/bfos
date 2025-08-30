@@ -3,10 +3,10 @@
 rm bfOS.iso
 rm iso_root/boot/bfOS
 
+make
+
 cp bin/bfOS iso_root/boot/
 cp ./limine.conf iso_root/boot/limine
-
-make
 
 xorriso -as mkisofs -R -r -J -b boot/limine/limine-bios-cd.bin \
 	-no-emul-boot -boot-load-size 4 -boot-info-table -hfsplus \
