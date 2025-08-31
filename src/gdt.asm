@@ -2,14 +2,9 @@
 
 global set_gdt
 global reload_segments
-
-gdtr:
-	DW 0
-	DQ 0
+extern gdtr
 
 set_gdt:
-	mov [gdtr], di
-	mov [gdtr+2], rsi
 	lgdt [gdtr]
 	ret
 

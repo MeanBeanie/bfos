@@ -3,7 +3,9 @@
 rm bfOS.iso
 rm iso_root/boot/bfOS
 
-make
+if ! make ; then
+	exit
+fi
 
 cp bin/bfOS iso_root/boot/
 cp ./limine.conf iso_root/boot/limine

@@ -48,7 +48,12 @@ struct __attribute__((packed)) tss {
 	uint8_t x60_64;
 };
 
-extern void set_gdt(uint32_t limit, uint64_t base);
+struct {
+	uint16_t limit;
+	uint64_t base;
+} __attribute__((packed)) gdtr;
+
+extern void set_gdt(void);
 extern void reload_segments(void);
 
 void kernel_main(void);
@@ -59,10 +64,8 @@ void kernel_early(void){
 		hcf();
 	}
 
-	struct tss tss = {
-		.x00_04 = 0,
-
-	};
+	// TODO!! figure out what to put in the TSS
+	struct tss tss = { 0 };
 
 	size_t tss_size = sizeof(tss)-1;
 	uintptr_t tss_addr = (uintptr_t)&tss;
@@ -120,7 +123,10 @@ void kernel_early(void){
 		}
 	};
 
-	set_gdt(sizeof(gdt)-1, (uint64_t)&gdt);
+	gdtr.limit = sizeof(gdt)-1;
+	gdtr.base = (uint64_t)&gdt;
+
+	set_gdt();
 	reload_segments();
 
 	if(framebuffer_request.response == NULL
