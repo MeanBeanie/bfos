@@ -1,4 +1,5 @@
 #include "memory.h"
+#include "limine.h"
 #include <stdint.h>
 
 // implementations taken from https://wiki.osdev.org/Limine_Bare_Bones
@@ -60,3 +61,87 @@ void hcf(void) {
 		asm ("hlt");
 	}
 }
+
+struct {
+	struct limine_memmap_entry* arr[128];
+	size_t count;
+} usable_entries = {0};
+
+__attribute__((used, section(".limine_requests")))
+static volatile struct limine_memmap_request memmap_request = {
+	.id = LIMINE_MEMMAP_REQUEST,
+	.revision = 0
+};
+
+int init_memory_stuff(void){
+	if(memmap_request.response == NULL
+	|| memmap_request.response->entry_count < 1){
+		return 0;
+	}
+
+	for(size_t i = 0; i < memmap_request.response->entry_count; i++){
+		if(memmap_request.response->entries[i]->type == LIMINE_MEMMAP_USABLE){
+			usable_entries.arr[usable_entries.count] = memmap_request.response->entries[i];
+			usable_entries.count++;
+		}
+	}
+
+	// creates header for data, marking it all as free memory
+	uint8_t* ptr = (uint8_t*)(RAM_START + usable_entries.arr[0]->base);
+	*ptr = 0b00100111; // sets it to free and contiguous and 5 bytes long
+	for(int i = 0; i < 8; i++){
+		ptr++;
+		*ptr = (usable_entries.arr[0]->length >> (i*8)) & 0xFF;
+	}
+
+	return 1;
+}
+
+// aligns the size with the size of a pointer
+size_t align(size_t size){
+	return size + (sizeof(intptr_t)-(size % sizeof(intptr_t)));
+}
+
+// TODO!! support data being split up across sections
+void* malloc(size_t size){
+	size = align(size);
+
+	// find the next free section of memory
+	for(size_t i = 0; i < usable_entries.count; i++){
+		// j will be moved by the headers
+		for(size_t j = 0; j < usable_entries.arr[0]->length;){
+			uint8_t* ptr = (uint8_t*)(RAM_START + usable_entries.arr[0]->base + j);
+			uint64_t len = 0;
+			for(int k = 0; k < 8; k++){
+				len |= (*(ptr+k+1)) << (k*8);
+			}
+			
+			if((*ptr) & 0x1 && len >= size){ // if space is free and large enough
+				*ptr &= ~(1 << 0); // mark the space as not free
+				for(int k = 0; k < 8; k++){
+					*(ptr+k+1) = (size >> (k*8)) & 0xFF;
+				}
+				memset(ptr+9, 0, size);
+				*(ptr+9+size) = 0b00100111;
+				len -= size;
+				for(int k = 0; k < 8; k++){
+					*(ptr+9+size+k+1) = (len >> (k*8)) & 0xFF;
+				}
+				return ptr+9;
+			}
+			else{
+				j += 9+len; // adding 9 skips the header, then len skips the data
+			}
+		}
+	}
+
+	return NULL;
+}
+
+// TODO!! combine adjacent memory locations
+void free(void* ptr){
+	uint8_t* header = ptr-9;
+	*header |= 0x1; // set free flag
+}
+
+void* realloc(void* ptr, size_t size);

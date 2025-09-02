@@ -9,7 +9,12 @@
 
 #define KERNEL_PRINT_OFFSET 10
 
+struct kernel_debug_printer {
+	struct limine_framebuffer* fb;
+	int x, y;
+};
+
 // prints an 8x8 font at 2x scale, large spacing for ease of reading
-void kdbg_printf(struct limine_framebuffer* fb, int x, int y, const char* fmt, ...);
+void kdbg_printf(struct kernel_debug_printer* printer, const char* fmt, ...);
 
 #endif // IO_H
